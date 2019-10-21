@@ -1,0 +1,13 @@
+body {
+    background-color: black;
+}
+
+#messages {
+}
+
+#messages span {
+    color: white;
+    font-family: monospace;
+    display: block;
+    font-size: 1.5em;
+}

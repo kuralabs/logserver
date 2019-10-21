@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>WebSocket Client</title>
+    <style>
+body {
+    background-color: black;
+}
+#messages {
+}
+#messages span {
+    color: white;
+    font-family: monospace;
+    display: block;
+    font-size: 1.5em;
+}
+    </style>
+</head>
+
+<body>
+    <div id="messages"></div>
+    <script>
+
+    const filename = 'afile.log'
+    let socket = new WebSocket(`ws://localhost:9292/follow/${filename}`);
+
+    socket.onmessage = function (event) {
+        let line = document.createElement('span')
+        line.appendChild(document.createTextNode(event.data))
+        document.getElementById('messages').appendChild(line)
+        line.scrollIntoView()
+    }
+    </script>
+</body>
+</html>
