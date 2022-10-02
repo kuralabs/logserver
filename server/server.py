@@ -17,13 +17,8 @@
 # under the License.
 
 from pathlib import Path
-from contextlib import closing
-from asyncio import get_event_loop
-
 from aiohttp import web
-from aionotify import Watcher, Flags
-from aiofile import AIOFile, LineReader
-
+from sh import tail
 
 async def handle(request):
 
@@ -38,6 +33,7 @@ async def handle(request):
     cleanfn = Path(rawfn).name
     fnpath = Path().cwd() / cleanfn
 
+
     if not fnpath.is_file():
         raise web.HTTPNotFound(reason='File {} not found'.format(rawfn))
 
@@ -45,27 +41,10 @@ async def handle(request):
     ws = web.WebSocketResponse()
     await ws.prepare(request)
 
-    # Create watcher for file
-    with closing(Watcher()) as watcher:
-        watcher.watch(path=str(fnpath), flags=Flags.MODIFY)
+    
 
-        await watcher.setup(get_event_loop())
-        print('Watcher created for "{}"'.format(fnpath))
-
-        async with AIOFile(fnpath, mode='r', encoding='utf-8') as afd:
-            print('Sending lines!')
-            reader = LineReader(afd)
-
-            async for line in reader:
-                print(line, end='')
-                await ws.send_str(line)
-
-            while True:
-                event = await watcher.get_event()
-                print('Got event! {}'.format(event))
-                async for line in reader:
-                    print(line, end='')
-                    await ws.send_str(line)
+    for line in tail("-f", fnpath, _iter=True):
+        await ws.send_str(line)
 
     return ws
 
